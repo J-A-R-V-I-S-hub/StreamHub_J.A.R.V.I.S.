@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="core" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff6d8"/>
+      <stop offset="35%" stop-color="#f0b429"/>
+      <stop offset="100%" stop-color="#8a5a10"/>
+    </radialGradient>
+    <radialGradient id="halo" cx="50%" cy="42%" r="55%">
+      <stop offset="0%" stop-color="#2a0b0f"/>
+      <stop offset="100%" stop-color="#0a0405"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffd979"/>
+      <stop offset="100%" stop-color="#c98a1b"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#halo)"/>
+
+  <!-- alone esterno -->
+  <circle cx="256" cy="196" r="168" fill="none" stroke="#f0b429" stroke-opacity="0.16" stroke-width="10"/>
+
+  <!-- raggi esterni -->
+  <g stroke="url(#gold)" stroke-width="9" stroke-linecap="round" stroke-opacity="0.85">
+    <line x1="256" y1="28"  x2="256" y2="62"/>
+    <line x1="256" y1="330" x2="256" y2="364"/>
+    <line x1="88"  y1="196" x2="122" y2="196"/>
+    <line x1="390" y1="196" x2="424" y2="196"/>
+    <line x1="137" y1="77"  x2="161" y2="101"/>
+    <line x1="351" y1="291" x2="375" y2="315"/>
+    <line x1="375" y1="77"  x2="351" y2="101"/>
+    <line x1="161" y1="291" x2="137" y2="315"/>
+    <line x1="192" y1="43"  x2="206" y2="74"/>
+    <line x1="320" y1="43"  x2="306" y2="74"/>
+    <line x1="192" y1="349" x2="206" y2="318"/>
+    <line x1="320" y1="349" x2="306" y2="318"/>
+    <line x1="43"  y1="260" x2="74"  y2="246"/>
+    <line x1="469" y1="260" x2="438" y2="246"/>
+    <line x1="43"  y1="132" x2="74"  y2="146"/>
+    <line x1="469" y1="132" x2="438" y2="146"/>
+  </g>
+
+  <!-- anello esterno -->
+  <circle cx="256" cy="196" r="148" fill="none" stroke="url(#gold)" stroke-width="13"/>
+  <!-- anello interno -->
+  <circle cx="256" cy="196" r="104" fill="none" stroke="#c98a1b" stroke-width="7" stroke-opacity="0.9"/>
+  <!-- anello punteggiato interno -->
+  <circle cx="256" cy="196" r="76" fill="none" stroke="#f0b429" stroke-width="4"
+          stroke-dasharray="5 13" stroke-opacity="0.75"/>
+
+  <!-- raggi del nucleo -->
+  <g stroke="#f0b429" stroke-width="6" stroke-opacity="0.55">
+    <line x1="256" y1="140" x2="256" y2="112"/>
+    <line x1="256" y1="252" x2="256" y2="280"/>
+    <line x1="200" y1="196" x2="172" y2="196"/>
+    <line x1="312" y1="196" x2="340" y2="196"/>
+    <line x1="217" y1="157" x2="198" y2="138"/>
+    <line x1="295" y1="235" x2="314" y2="254"/>
+    <line x1="295" y1="157" x2="314" y2="138"/>
+    <line x1="217" y1="235" x2="198" y2="254"/>
+  </g>
+
+  <!-- nucleo -->
+  <circle cx="256" cy="196" r="52" fill="url(#core)"/>
+  <circle cx="256" cy="196" r="52" fill="none" stroke="#fff0c2" stroke-width="3" stroke-opacity="0.8"/>
+  <circle cx="256" cy="196" r="26" fill="#fffbe8" fill-opacity="0.92"/>
+
+  <!-- lettering -->
+  <text x="256" y="404" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+        font-size="52" font-weight="bold" letter-spacing="10" fill="url(#gold)">J.A.R.V.I.S.</text>
+  <text x="256" y="444" text-anchor="middle" font-family="Helvetica Neue, Helvetica, Arial, sans-serif"
+        font-size="19" letter-spacing="6" fill="#c9a3a3">STREAMHUB</text>
+</svg>
