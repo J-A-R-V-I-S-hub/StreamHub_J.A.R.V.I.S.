@@ -218,10 +218,14 @@ async function main() {
     check('get_live_categories -> array', Array.isArray(lcats.json) && lcats.json.length > 0);
 
     const live = await getJson(q('get_live_streams'));
-    check('get_live_streams -> user_info + data', !!(live.json && live.json.user_info && live.json.data));
+    // Il pannello Xtream originale restituisce le liste di stream come
+    // array nudi: accettiamo anche la forma avvolta, ma e' quella nuda
+    // che i player iOS si aspettano.
+    const liveList = Array.isArray(live.json) ? live.json : (live.json && live.json.data) || [];
+    check('get_live_streams -> array di stream', Array.isArray(liveList) && liveList.length > 0);
     check(
       'stream live completo',
-      has(live.json.data[0], ['num', 'name', 'stream_id', 'category_id', 'direct_source'])
+      has(liveList[0], ['num', 'name', 'stream_id', 'category_id', 'direct_source'])
     );
 
     console.log('');

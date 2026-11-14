@@ -142,6 +142,24 @@ var CONFIG = {
 
 };
 
+// L'SVG del logo, estratto dal data URI: cosi' lo possiamo servire
+// come URL vero (/logo.svg) invece di inlinearlo in ogni risposta.
+// I client si aspettano un https://, non un data:image/svg+xml.
+var LOGO_SVG = '';
+try {
+  var m = String(CONFIG.logo).match(/^data:image\/svg\+xml;base64,(.*)$/);
+  if (m) LOGO_SVG = Buffer.from(m[1], 'base64').toString('utf8');
+} catch (e) {
+  LOGO_SVG = '';
+}
+
+/** URL assoluto di una risorsa del server. */
+function absUrl(value, base) {
+  if (!value) return '';
+  if (/^(https?:)?\/\//i.test(value) || value.indexOf('data:') === 0) return value;
+  return base + (value.charAt(0) === '/' ? value : '/' + value);
+}
+
 // CONFIG.streamPath dipende dalle credenziali: lo calcoliamo qui'.
 CONFIG.streamPath = CONFIG.username + '/' + CONFIG.password;
 
@@ -168,7 +186,7 @@ var CATALOG = {
       name: 'Video Personale di Test 01',
       category_id: '1',
       container_extension: 'mp4',
-      icon: CONFIG.logo,
+      icon: '/logo.svg',
       source: CONFIG.streams.bunny,
       info: {
         tmdb_id: '',
@@ -239,7 +257,7 @@ var CATALOG = {
       stream_id: 3001,
       name: 'J.A.R.V.I.S. Live Test',
       category_id: '20',
-      icon: CONFIG.logo,
+      icon: '/logo.svg',
       epg_channel_id: 'jarvis.live.test',
       source: CONFIG.streams.tears,
     },
@@ -289,8 +307,12 @@ function userInfo(base) {
     active_cons: '1',
     created_at: String(now()),
     max_connections: '5',
-    allowed_output_formats: ['ts', 'm3u8'],
-    logo: CONFIG.logo,
+    // I formati che questo server sa consegnare. Devono includere anche
+    // quelli del VOD (i nostri file sono .mp4): alcuni client, se non
+    // trovano il formato del contenuto in questa lista, scartano il
+    // catalogo VOD e mostrano la sezione vuota.
+    allowed_output_formats: ['ts', 'm3u8', 'mp4', 'mkv'],
+    logo: LOGO_SVG ? absUrl('/logo.svg', base) : CONFIG.logo,
   };
 }
 
@@ -363,7 +385,7 @@ function buildPayload(action, params, base) {
             name: s.name,
             stream_type: 'movie',
             stream_id: Number(s.stream_id),
-            stream_icon: s.icon || '',
+            stream_icon: absUrl(s.icon || '', base),
             epg_channel_id: null,
             added: String(now()),
             category_id: String(s.category_id),
@@ -518,30 +540,28 @@ function buildPayload(action, params, base) {
       return { status: 200, body: CATALOG.liveCategories };
 
     case 'get_live_streams':
+      // ARRAY NUDO, come nel pannello Xtream originale: le liste di
+      // stream (vod, live) sono array, non oggetti avvolti. Alcuni client
+      // rifiutano la forma {user_info, server_info, data} e rimangono in
+      // loop di caricamento.
       return {
         status: 200,
-        body: {
-          user_info: userInfo(base),
-          server_info: serverInfo(base),
-          logo: CONFIG.logo,
-          app_name: 'StreamHub J.A.R.V.I.S.',
-          data: CATALOG.liveStreams.map(function (l) {
-            return {
-              num: Number(l.stream_id),
-              name: l.name,
-              stream_type: 'live',
-              stream_id: Number(l.stream_id),
-              stream_icon: l.icon || '',
-              epg_channel_id: l.epg_channel_id || '',
-              added: String(now()),
-              category_id: String(l.category_id),
-              custom_sid: '',
-              tv_archive: 0,
-              direct_source: l.source || streamUrl(base, l.stream_id, 'ts'),
-              tv_archive_duration: 0,
-            };
-          }),
-        },
+        body: CATALOG.liveStreams.map(function (l) {
+          return {
+            num: Number(l.stream_id),
+            name: l.name,
+            stream_type: 'live',
+            stream_id: Number(l.stream_id),
+            stream_icon: absUrl(l.icon || '', base),
+            epg_channel_id: l.epg_channel_id || '',
+            added: String(now()),
+            category_id: String(l.category_id),
+            custom_sid: '',
+            tv_archive: 0,
+            direct_source: l.source || streamUrl(base, l.stream_id, 'ts'),
+            tv_archive_duration: 0,
+          };
+        }),
       };
 
     case 'get_short_episodes':
@@ -575,9 +595,59 @@ function parseParams(queryString, bodyText) {
 }
 
 /** Router: `/player_api.php`, `/get.php`, `/health`. */
+
+/**
+ * EPG in XMLTV: i client lo scaricano per i canali live.
+ * Se questa richiesta fallisce, alcuni player (iOS) abortano il download
+ * dell'intero catalogo e restano con le sezioni vuote.
+ */
+function buildEpg(base) {
+  var channels = CATALOG.liveStreams || [];
+  var lines = [];
+  var now = Math.floor(Date.now() / 1000);
+
+  lines.push('<?xml version="1.0" encoding="UTF-8"?>');
+  lines.push('<!DOCTYPE tv SYSTEM "xmltv.dtd">');
+  lines.push('<tv generator-info-name="StreamHub J.A.R.V.I.S.">');
+
+  for (var i = 0; i < channels.length; i++) {
+    var c = channels[i];
+    var id = c.epg_channel_id || String(c.stream_id);
+    lines.push('  <channel id="' + id + '">');
+    lines.push('    <display-name>' + (c.name || id) + '</display-name>');
+    if (c.icon) lines.push('    <icon src="' + absUrl(c.icon, base) + '" />');
+    lines.push('  </channel>');
+
+    // Un blocco di programmi, cosi' l'EPG non e' vuoto.
+    for (var p = 0; p < 4; p++) {
+      var start = now + p * 3600;
+      var stop = start + 3600;
+      function fmt(ts) {
+        var d = new Date(ts * 1000);
+        return d.toISOString().replace('T', ' ').slice(0, 19) + ' +0000';
+      }
+      lines.push('  <programme start="' + fmt(start) + '" stop="' + fmt(stop) + '" channel="' + id + '">');
+      lines.push('    <title>' + (c.name || 'Programma') + '</title>');
+      lines.push('    <desc>Programma di test del connettore StreamHub J.A.R.V.I.S.</desc>');
+      lines.push('  </programme>');
+    }
+  }
+
+  lines.push('</tv>');
+  return lines.join('\n');
+}
+
 function route(pathname, queryString, bodyText, req) {
   var base = baseUrlFrom(req);
   var params = parseParams(queryString, bodyText);
+
+  if (pathname === '/xmltv.php') {
+    return { status: 200, body: buildEpg(baseUrlFrom(req)), type: 'application/xml; charset=utf-8' };
+  }
+
+  if (pathname === '/logo.svg') {
+    return { status: 200, body: LOGO_SVG, type: 'image/svg+xml' };
+  }
 
   if (pathname === '/health') {
     return {
@@ -827,6 +897,18 @@ function proxyStream(req, res, sourceUrl, depth, attempt) {
 
 function respond(pathname, queryString, bodyText, req, res) {
   var result = route(pathname, queryString, bodyText, req);
+
+  // Risorse statiche servite cosi' (es. il logo).
+  if (result.type) {
+    res.writeHead(result.status, {
+      'Content-Type': result.type,
+      'Content-Length': Buffer.byteLength(result.body || ''),
+      'Cache-Control': 'public, max-age=3600',
+      'Access-Control-Allow-Origin': '*',
+    });
+    res.end(result.body || '');
+    return;
+  }
 
   if (result.status === 302 && result.location) {
     // In modalita' proxy il file viene passato attraverso il server;
