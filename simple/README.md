@@ -215,19 +215,28 @@ Il file rileva da solo l'ambiente in cui gira:
 
 ### Gli endpoint
 
+> **Attenzione alla forma delle risposte.** Le liste di stream (`get_vod_streams`,
+> `get_live_streams`, `get_series`) devono essere **array nudi**, come nel pannello
+> Xtream originale. Solo la chiamata senza `action` (autenticazione) restituisce
+> un oggetto con `user_info` e `server_info`. I client iOS rifiutano la forma
+> avvolta `{user_info, server_info, data}`: rimangono in loop sul live e non
+> caricano mai le sezioni VOD e Serie.
+
 | Chiamata | Risposta |
 |----------|----------|
 | `player_api.php?username=..&password=..` | `user_info` (con `auth:1`, messaggio, logo) + `server_info` |
 | `&action=get_vod_categories` | array categorie |
-| `&action=get_vod_streams` | array film |
+| `&action=get_vod_streams` | **array** film |
 | `&action=get_vod_info&vod_id=1001` | `info` + `movie_data` |
 | `&action=get_series_categories` | array categorie serie |
-| `&action=get_series` | array serie (**con `series_id`**) |
+| `&action=get_series` | **array** serie (**con `series_id`**) |
 | `&action=get_series_info&series_id=2001` | `{ seasons[], info{}, episodes{"1":[]} }` |
 | `&action=get_live_categories` | array categorie live |
-| `&action=get_live_streams` | `{ user_info, server_info, data[] }` |
+| `&action=get_live_streams` | **array** live |
 | `get.php?username=..&password=..&stream=1001&extension=mp4` | il flusso (proxy o `302`) |
 | `movie/{user}/{pass}/{id}.mp4` | path classico Xtream (con prefisso `movie`/`live`/`series`) |
+| `/xmltv.php` | EPG in XMLTV (i client iOS lo scaricano per i live) |
+| `/logo.svg` | il logo del servizio |
 | `/health` | stato del servizio |
 
 > **`series_id` non è un dettaglio**: senza quel campo il player non sa quale
