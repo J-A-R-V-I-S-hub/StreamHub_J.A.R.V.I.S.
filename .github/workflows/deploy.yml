@@ -23,9 +23,10 @@ jobs:
               exit 1
             fi
             git pull origin main
-            docker compose up --build -d
+            docker compose --profile panel up --build -d
             # Il container e' gia' sulla rete di Nginx Proxy Manager
             # (npm_default, dichiarata nel compose): non serve collegarlo
             # a mano e il collegamento non si perde se NPM viene ricreato.
-            docker ps --filter name=streamhub_jarvis --format '{{.Names}} {{.Status}}'
+            docker ps --filter name=streamhub --filter name=jarvis_panel \
+              --format '{{.Names}}  {{.Status}}'
             echo "✅ Deploy completato"

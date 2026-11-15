@@ -1,0 +1,43 @@
+# Container del pannello Flutter (web).
+#
+# Build in due fasi: la prima compila il progetto Flutter per il web,
+# la seconda serve i file statici con nginx. Sul server non serve
+# installare Flutter: basta Docker.
+#
+#   docker compose --profile panel up -d --build jarvis-panel
+
+# --- fase 1: build ---
+FROM ghcr.io/cirruslabs/flutter:stable AS build
+
+# git: il progetto Flutter lo usa per la versione (pub non lo richiede, ma
+# alcuni pacchetti sì) e per non far fallire il build su un repo git
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends git \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Le dipendenze prima del codice: cosi' la cache Docker le riusa
+COPY panel/pubspec.yaml panel/pubspec.lock* ./
+RUN flutter pub get || flutter pub get --offline
+
+COPY panel/ ./
+RUN flutter build web --release
+
+# --- fase 2: servizio statico ---
+FROM nginx:alpine
+
+RUN rm -rf /usr/share/nginx/html/* \
+ && rm -f /etc/nginx/conf.d/default.conf
+
+COPY --from=build /app/build/web /usr/share/nginx/html
+COPY deploy/nginx-panel.conf /etc/nginx/conf.d/default.conf
+
+ENV TZ=Europe/Rome
+
+EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s \
+  CMD wget -qO- http://127.0.0.1/ >/dev/null || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]

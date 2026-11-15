@@ -6,9 +6,12 @@
 #
 #   cp .env.example .env
 #   docker compose up -d --build
+#   docker compose --profile panel up -d --build jarvis-panel
 #
-# Dopo il primo avvio, Nginx Proxy Manager va collegato alla rete:
-#   docker network connect streamhub_jarvis_default npm-app-1
+# Entrambi i servizi sono anche sulla rete di Nginx Proxy Manager
+# (npm_default, dichiarata come external): cosi' NPM li raggiunge per nome
+# senza 'docker network connect' a mano, e il collegamento non si perde se
+# NPM viene ricreato.
 #
 # Nel .env:
 #   LOCAL_URL   indirizzo del connettore SEMPLICE (questo, in prova)
@@ -21,6 +24,9 @@
 name: streamhub_jarvis
 
 services:
+  # ------------------------------------------------------------------ #
+  # Connettore Xtream: e' quello che parla con IBO Player.
+  # ------------------------------------------------------------------ #
   streamhub_jarvis:
     build:
       context: .
@@ -45,9 +51,33 @@ services:
       start_period: 5s
     networks:
       - default
-      # Rete di Nginx Proxy Manager: cosi' NPM raggiunge il container per
-      # nome senza dover eseguire 'docker network connect' a mano (e il
-      # collegamento non si perde se NPM viene ricreato).
+      - npm_default
+
+  # ------------------------------------------------------------------ #
+  # Pannello Flutter (web). Non parte con `up` normale: e' un profilo.
+  #   docker compose --profile panel up -d --build jarvis-panel
+  # ------------------------------------------------------------------ #
+  jarvis-panel:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.panel
+    image: streamhub_jarvis_panel
+    container_name: jarvis_panel
+    profiles: ['panel']
+    environment:
+      TZ: ${TZ:-Europe/Rome}
+      # Il pannello sa dove si trova l'API: glielo passiamo come variabile
+      # d'ambiente, cosi' non deve indovinarlo.
+      API_URL: ${PANEL_API_URL:-http://streamhub_jarvis:8080}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - default
       - npm_default
 
 networks:

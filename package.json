@@ -17,7 +17,10 @@
     "hostname": "bash scripts/set-hostname.sh",
     "staticip": "bash scripts/set-static-ip.sh",
     "build:logo": "node scripts/embed-logo.js",
-    "build:browser": "node scripts/build-browser-demo.js"
+    "build:browser": "node scripts/build-browser-demo.js",
+    "panel:build": "cd panel && flutter build web --release",
+    "panel:up": "docker compose --profile panel up -d --build jarvis-panel",
+    "panel:down": "docker compose --profile panel stop jarvis-panel"
   },
   "engines": {
     "node": ">=18"
