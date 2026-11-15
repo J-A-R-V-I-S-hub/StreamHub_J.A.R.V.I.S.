@@ -1,0 +1,28 @@
+# Cosa NON deve finire nel contesto di build (cioe' quello che Docker
+# riceve dalla macchina). Vale quanto .gitignore, ma per Docker.
+#
+# Nota: il .env NON deve mai entrare: i segreti restano fuori dalle
+# immagini. Il container li riceve dall'esterno (env_file nel compose).
+
+# Segreti
+.env
+.env.*
+!.env.example
+
+# Dipendenze e artefatti
+node_modules
+dist
+tools
+media/*.mp4
+
+# Git e CI
+.git
+.github
+
+# Documentazione e configurazioni di sviluppo
+README.md
+LICENSE
+.vscode
+.idea
+.DS_Store
+*.log

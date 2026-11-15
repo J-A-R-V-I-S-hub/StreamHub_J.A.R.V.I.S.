@@ -1,0 +1,51 @@
+# StreamHub J.A.R.V.I.S. - deploy su Oracle Server
+#
+# Il container NON pubblica porte sull'host: Nginx Proxy Manager lo
+# raggiunge per nome dentro la rete Docker (forward: streamhub_jarvis:8080).
+# Le porte 8080/8765 dell'host sono gia' usate da altri progetti.
+#
+#   cp .env.example .env
+#   docker compose up -d --build
+#
+# Dopo il primo avvio, Nginx Proxy Manager va collegato alla rete:
+#   docker network connect streamhub_jarvis_default npm-app-1
+#
+# Nel .env:
+#   LOCAL_URL   indirizzo del connettore SEMPLICE (questo, in prova)
+#   SERVER_URL  indirizzo del progetto SERIO (il dominio pubblico)
+# Ogni progetto legge la sua variabile.
+#
+# La porta su cui l'app ascolta DENTRO il container deve combaciare con
+# il forward port di Nginx Proxy Manager (8080).
+
+name: streamhub_jarvis
+
+services:
+  streamhub_jarvis:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    image: streamhub_jarvis
+    container_name: streamhub_jarvis
+    env_file:
+      - .env
+    environment:
+      PORT: '8080'
+      TZ: ${TZ:-Europe/Rome}
+    restart: unless-stopped
+    healthcheck:
+      # L'healthcheck gira DENTRO il container: usa il loopback (127.0.0.1)
+      # per non dipendere dalla rete Docker ne' dal DNS.
+      # Il doppio $$ serve a Compose per non interpretare la variabile:
+      # all'interno del container arriva come $PORT.
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:$${PORT:-8080}/health >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - default
+
+networks:
+  default:
+    name: streamhub_jarvis_default
