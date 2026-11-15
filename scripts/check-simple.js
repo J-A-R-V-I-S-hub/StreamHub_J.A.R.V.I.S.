@@ -168,6 +168,19 @@ async function main() {
     check('messaggio presente', !!(authRes.json && authRes.json.user_info.message));
     check('logo presente', !!(authRes.json && authRes.json.user_info.logo));
     check('server_info presente', !!(authRes.json && authRes.json.server_info));
+
+    // L'indirizzo annunciato deve combaciare con quello attivo nel .env:
+    // e' da li' che il player costruisce gli indirizzi dei contenuti.
+    const announced = authRes.json && authRes.json.server_info
+      ? `${authRes.json.server_info.url}:${authRes.json.server_info.port}`
+      : '';
+    // Il server annuncia LOCAL_URL (vedi activeUrl() in simple/server.js).
+    const expected = process.env.LOCAL_URL;
+    check(
+      'server_info annuncia l\'indirizzo attivo',
+      !expected || announced === String(expected).replace(/^https?:\/\//, '').replace(/\/+$/, ''),
+      `annunciato ${announced || '(nessuno)'}${expected ? ` atteso ${expected}` : ''}`
+    );
     const bad = await getJson('/player_api.php?username=x&password=y');
     check('credenziali errate -> 401', bad.status === 401, `status ${bad.status}`);
 

@@ -14,7 +14,7 @@
  *
  *     e apri .env: metti XTREAM_USERNAME e XTREAM_PASSWORD. Sono esattamente
  *     le credenziali che poi digiti in IBO Player Pro. Tutto il resto
- *     (PORT, SERVER_URL, ...) ha valori di default sensati.
+ *     (PORT, LOCAL_URL, ...) ha valori di default sensati.
  *
  *  2) Avvialo:
  *
@@ -267,20 +267,28 @@ var CATALOG = {
 /* ============================ 3. MOTORE XTREAM ============================ */
 
 /**
- * Indirizzo pubblico del server.
+ * L'indirizzo con cui il server si presenta al player.
  *
- * Se e' impostato (variabile SERVER_URL) ha la precedenza su tutto: e' lui
- * l'indirizzo che il server annuncia al player in server_info e nelle URL dei
- * flussi. Serve a tenerlo stabile anche se il player si collega in un modo
- * diverso (rete locale, proxy, dominio pubblico).
+ *   LOCAL_URL  l'indirizzo di questa istanza (in locale quello di prova)
  *
- * Se vuoto, l'indirizzo viene dedotto dall'host con cui il client chiama:
- * comodo in locale, basta non toccare nulla.
+ * Il player lo usa per costruire gli indirizzi dei contenuti, quindi deve
+ * combiacare con quello scritto nella playlist.
+ *
+ * Se non e' impostato, l'indirizzo viene dedotto dall'host con cui il client
+ * chiama: comodo, basta non toccare nulla.
+ *
+ * (Il progetto completo usera' SERVER_URL per l'indirizzo di produzione.)
  */
-var SERVER_URL = ENV.SERVER_URL ? String(ENV.SERVER_URL).replace(/\/+$/, '') : '';
+var LOCAL_URL = ENV.LOCAL_URL ? String(ENV.LOCAL_URL).replace(/\/+$/, '') : '';
+
+/** L'indirizzo attivo, o stringa vuota se si usa quello della richiesta. */
+function activeUrl() {
+  return LOCAL_URL;
+}
 
 function baseUrlFrom(req) {
-  if (SERVER_URL) return SERVER_URL;
+  var fixed = activeUrl();
+  if (fixed) return fixed;
   var host = (req && req.headers && req.headers.host) || 'localhost:8080';
   // Il protocollo segue come ci siamo connessi: dietro un proxy che
   // termina il TLS arriva X-Forwarded-Proto, altrimenti questo server

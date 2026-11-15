@@ -115,7 +115,7 @@ aprire porte:
 npm run serve
 ```
 
-Tailscale assegna al computer un nome stabile (`macbook-pro-di-henry.<tailnet>.ts.net`)
+Tailscale assegna al computer un nome stabile (`<computer>.<tailnet>.ts.net`)
 con **certificato TLS valido**, e lo inoltra al tuo servizio locale. La prima
 volta il comando ti stampa il link della console Tailscale da aprire per
 abilitare la pubblicazione (è un clic).
@@ -123,10 +123,10 @@ abilitare la pubblicazione (è un clic).
 Nella playlist della TV:
 
 ```
-https://macbook-pro-di-henry.<tailnet>.ts.net
+https://<computer>.<tailnet>.ts.net
 ```
 
-e nel `.env` la stessa stringa in `SERVER_URL`.
+e nel `.env` la stessa stringa in `LOCAL_URL`.
 
 > Il tunnel "quick" (`npm run tunnel`) è l'alternativa più veloce da avviare,
 > ma il suo URL **cambia a ogni riavvio**: per la TV non va bene.
@@ -134,73 +134,21 @@ e nel `.env` la stessa stringa in `SERVER_URL`.
 Con un **dominio** proprio il discorso è lo stesso, ma l'URL è tuo:
 `https://streamhub.tuodominio.it`.
 
-### `SERVER_URL`, se ti serve
+### `LOCAL_URL`
 
-Di default il server annuncia al player l'indirizzo con cui il client lo
-chiama. Se vuoi che ne annunci un altro, impostalo nel `.env` — **mettici
-esattamente l'indirizzo che poi scrivi nella playlist**:
+Il server si presenta al player con **un solo indirizzo**. Il player lo usa per
+costruire gli indirizzi dei contenuti, quindi deve combiaciare con quello
+scritto nella playlist.
 
 ```ini
-SERVER_URL=http://172.20.10.5:8080
+LOCAL_URL=https://mio-computer.tail1234.ts.net   # l'indirizzo di questa istanza
 ```
 
-Con la TV conviene fissarlo: così l'annuncio non dipende da come il player si
-collega.
+Se lo lasci vuoto, l'indirizzo viene dedotto da come il player chiama.
 
----
-
-## Verifica
-
-```bash
-npm run check
-```
-
-Avvia il server su una porta di test e controlla che risponda come un backend
-Xtream: autenticazione, catalogo, serie con stagioni ed episodi, redirect dei
-flussi, path classici e — se `ffprobe` è installato — che il flusso **abbia una
-traccia audio** (troppe clip di test in giro sono mute: il player riproduce ma
-non si sente niente).
-
-31 controlli. Il test serve anche da documentazione: elenca esattamente **cosa
-deve rispondere** il server perché un player funzioni.
-
-## Il log delle richieste
-
-Ogni richiesta viene stampata:
-
-```
-2026-11-14T19:15:32.810Z 206 GET /movie/Jarvis_Admin/***/1001.mp4 ip=172.20.10.7 139ms ua="Mozilla/5.0 ..."
-```
-
-È la finestra sul player: senza questo non si capisce cosa chiede IBO Player e
-dove si ferma. La password viene mascherata (i player la mandano in chiaro,
-sia in query string sia dentro il path classico).
-
-```bash
-npm run logs             # in tempo reale
-```
-
-Il log va **sia a schermo** (nel terminale dove gira il server) **sia su file**
-(`/tmp/jarvis.log`), quindi `npm run logs` funziona che tu lo avvii in primo
-piano o in background.
-
-> Il path classico `/movie/{utente}/{password}/{id}.mp4` è quello che usa
-> davvero IBO Player: senza supportarlo il player non riproduce nulla.
-
----
-
-## Come funziona dentro
-
-Il file è diviso in 6 blocchi:
-
-| Blocco | Contenuto |
-|--------|-----------|
-| 1. Configurazione | credenziali (da `.env` / env), messaggio, logo SVG inline |
-| 2. Catalogo | categorie, film, serie con stagioni ed episodi, live |
-| 3. Motore Xtream | `buildPayload(action, params, base)`: il cuore del protocollo |
-| 4. Router HTTP | `player_api.php`, `get.php`, path classici, `/health` |
-| 5. Avvio | si adatta all'ambiente (vedi sotto) |
-| 6. Modalità browser | nell'editor browser stampa i JSON che la TV riceverà |
+> Il progetto completo, che gira in Docker sul server, usa **`SERVER_URL`**
+> per l'indirizzo di produzione. Ogni progetto legge la sua variabile: il
+> connettore semplice `LOCAL_URL`, il progetto serio `SERVER_URL`.
 
 ### Le modalità di esecuzione
 
