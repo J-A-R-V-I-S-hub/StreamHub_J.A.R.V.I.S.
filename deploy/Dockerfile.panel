@@ -22,6 +22,10 @@ COPY panel/pubspec.yaml panel/pubspec.lock* ./
 RUN flutter pub get || flutter pub get --offline
 
 COPY panel/ ./
+# Nessun --dart-define: il pannello e' servito dallo STESSO dominio dell'API
+# (pannello su /, API su /player_api.php, /get.php, ...), quindi usa
+# Uri.base.origin e chiama l'API in same-origin. Niente CORS, niente
+# indirizzi da configurare.
 RUN flutter build web --release
 
 # --- fase 2: servizio statico ---

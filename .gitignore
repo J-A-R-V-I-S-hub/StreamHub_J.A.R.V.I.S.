@@ -19,6 +19,9 @@ media/*.mp4
 *.log
 npm-debug.log*
 
+# Note di routing locale (non va nel repo)
+deploy/ROUTING.md
+
 # macOS / Windows
 .DS_Store
 Thumbs.db
