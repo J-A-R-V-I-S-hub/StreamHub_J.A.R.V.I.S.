@@ -1,8 +1,13 @@
-name: Deploy to Oracle Server
+name: deploy
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -10,13 +15,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy via SSH
+      - name: Deploy sul server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: 158.180.235.83
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script_stop: true
           script: |
+            set -e
             cd /var/www/StreamHub_J.A.R.V.I.S.
             if [ ! -f .env ]; then
               echo "❌ Manca il file .env sul server: crealo a mano (vedi .env.example)."
@@ -24,9 +31,26 @@ jobs:
             fi
             git pull origin main
             docker compose --profile panel up --build -d
-            # Il container e' gia' sulla rete di Nginx Proxy Manager
-            # (npm_default, dichiarata nel compose): non serve collegarlo
-            # a mano e il collegamento non si perde se NPM viene ricreato.
-            docker ps --filter name=streamhub --filter name=jarvis_panel \
-              --format '{{.Names}}  {{.Status}}'
+            echo "⏳ attendo che i container siano healthy (max 90s)…"
+            stato="sconosciuto"
+            for i in $(seq 1 45); do
+              stato=$(docker inspect --format '{{.State.Health.Status}}' streamhub_api 2>/dev/null || echo assente)
+              pannello=$(docker inspect --format '{{.State.Health.Status}}' jarvis_panel 2>/dev/null || echo assente)
+              if [ "$stato" = "healthy" ] && [ "$pannello" = "healthy" ]; then
+                echo "✅ streamhub_api e jarvis_panel healthy"
+                break
+              fi
+              sleep 2
+            done
+            if [ "$stato" != "healthy" ]; then
+              echo "❌ streamhub_api non è healthy (stato: $stato)"
+              docker compose ps
+              docker compose logs --tail 60 streamhub_api
+              exit 1
+            fi
+            # verifica funzionale dall'interno: nessuna porta è pubblicata sull'host
+            docker exec streamhub_api wget -qO- http://127.0.0.1:8080/health >/dev/null \
+              && echo "✅ /health risponde dentro il container" \
+              || { echo "❌ /health non risponde"; docker compose logs --tail 40 streamhub_api; exit 1; }
+            docker ps --format '{{.Names}}  {{.Status}}' | grep -E 'streamhub|jarvis' || true
             echo "✅ Deploy completato"

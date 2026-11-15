@@ -1,30 +1,24 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:material_ui/material_ui.dart';
+import 'package:jarvis_panel/theme.dart';
 
-import 'package:jarvis_panel/main.dart';
-
+/// Test di base: il tema si costruisce e l'app monta.
+/// Le schermate vere parlano con l'API, quindi non si testano qui:
+/// la copertura del backend sta in server/test.
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('il tema si costruisce', (tester) async {
+    final theme = jarvisTheme();
+    expect(theme.useMaterial3, isTrue);
+    expect(theme.brightness, Brightness.dark);
+  });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  testWidgets('una schermata minima monta con il tema', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: jarvisTheme(),
+        home: const Scaffold(body: Center(child: Text('StreamHub'))),
+      ),
+    );
+    expect(find.text('StreamHub'), findsOneWidget);
   });
 }

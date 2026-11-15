@@ -80,6 +80,36 @@ services:
       - default
       - npm_default
 
+  # ------------------------------------------------------------------ #
+  # Backend nuovo (server/): database SQLite su volume.
+  # In produzione la porta non esce: passa da Nginx Proxy Manager.
+  # ------------------------------------------------------------------ #
+  streamhub_api:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.api
+    image: streamhub_api
+    container_name: streamhub_api
+    env_file:
+      - .env
+    environment:
+      PORT: '8080'
+      DATABASE_PATH: /app/data/streamhub.db
+      TZ: ${TZ:-Europe/Rome}
+    volumes:
+      - streamhub_data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:$${PORT:-8080}/health >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - default
+      - npm_default
+volumes:
+  streamhub_data:
 networks:
   default:
     name: streamhub_jarvis_default

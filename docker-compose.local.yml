@@ -1,0 +1,36 @@
+# Overlay per lo sviluppo locale (Mac) e per il test sulla TV.
+#
+# Il compose principale NON pubblica porte: in produzione passa tutto da
+# Nginx Proxy Manager sulla rete `npm_default`. Sul Mac quella rete non
+# esiste, quindi qui la togliamo e pubblichiamo le porte sull'host.
+#
+#   LOCAL_URL=http://<IP-del-Mac>:8090 \
+#     docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
+#
+# Pannello:  http://<IP>:8091  (proxy verso l'API compreso, come in produzione)
+# API:       http://<IP>:8090  (per curl e per la TV)
+
+services:
+  streamhub_jarvis:
+    networks:
+      - default
+    environment:
+      LOCAL_URL: ${LOCAL_URL:-http://127.0.0.1:8080}
+    ports:
+      - '8080:8080'
+
+  streamhub_api:
+    networks:
+      - default
+    environment:
+      PUBLIC_URL: ${LOCAL_URL:-http://127.0.0.1:8090}
+      DATABASE_PATH: /app/data/streamhub.db
+    ports:
+      - '8090:8080'
+
+  jarvis-panel:
+    profiles: []
+    networks:
+      - default
+    ports:
+      - '8091:80'

@@ -1,0 +1,10 @@
+{
+  "_nota": "Catalogo demo, opzionale. Sono URL di pubblico dominio in MP4: nessun contenuto protetto, nessuna credenziale. Il catalogo vero vive nel database e si popola dalle sorgenti dell'utente. Disattivabile con SEED_DEMO=0.",
+  "nomeLinea": "Demo - classici",
+  "voci": [
+    { "name": "Big Buck Bunny",   "url": "https://archive.org/download/BigBuckBunny_124/Content/big_buck_bunny_720p_surround.mp4", "group": "Classici", "kind": "movie" },
+    { "name": "Sintel",           "url": "https://archive.org/download/Sintel/sintel-2048-surround.mp4", "group": "Classici", "kind": "movie" },
+    { "name": "Elephants Dream",  "url": "https://archive.org/download/ElephantsDream/ed_hd.mp4", "group": "Classici", "kind": "movie" },
+    { "name": "Sintel (trailer)", "url": "https://download.blender.org/durian/trailer/sintel_trailer-1080p.mp4", "group": "Classici", "kind": "movie" }
+  ]
+}

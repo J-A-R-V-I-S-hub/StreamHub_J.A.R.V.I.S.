@@ -1,11 +1,11 @@
 {
-    "name": "jarvis_panel",
-    "short_name": "jarvis_panel",
+    "name": "StreamHub",
+    "short_name": "StreamHub",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "La tua libreria sulla TV.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

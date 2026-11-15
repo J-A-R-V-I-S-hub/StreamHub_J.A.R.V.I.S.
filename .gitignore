@@ -11,6 +11,8 @@ node_modules/
 simple/simple.js
 
 # Generati localmente
+data/
+server/data/
 dist/
 tools/
 media/*.mp4
@@ -19,8 +21,9 @@ media/*.mp4
 *.log
 npm-debug.log*
 
-# Note di routing locale (non va nel repo)
-deploy/ROUTING.md
+# File privati di lavoro (non vanno nel repo)
+Roadmap.md
+opencode.jsonc
 
 # macOS / Windows
 .DS_Store
@@ -39,3 +42,6 @@ ios/Pods/
 panel/build/
 panel/.dart_tool/
 panel/.idea/
+
+# Artefatti di reverse engineering (app di terze parti: MAI nel repo pubblico)
+rea/

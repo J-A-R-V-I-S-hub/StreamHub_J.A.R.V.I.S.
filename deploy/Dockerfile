@@ -1,7 +1,7 @@
 # Container del connettore (simple/server.js).
 #
 # Node puro: nessuna dipendenza da installare, l'immagine resta piccola.
-FROM node:20-alpine
+FROM node:24-alpine
 
 WORKDIR /app
 
