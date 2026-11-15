@@ -31,3 +31,8 @@ build/
 .flutter-plugins-dependencies
 *.iml
 ios/Pods/
+# Il progetto Flutter ha il suo .gitignore in panel/, ma qui ignoriamo
+# anche i suoi artefatti di build.
+panel/build/
+panel/.dart_tool/
+panel/.idea/

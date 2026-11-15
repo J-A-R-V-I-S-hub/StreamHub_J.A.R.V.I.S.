@@ -15,6 +15,12 @@ dist
 tools
 media/*.mp4
 
+# Flutter: il sorgente del pannello serve (panel/), i suoi artefatti no
+panel/build
+panel/.dart_tool
+panel/.idea
+panel/**/build
+
 # Git e CI
 .git
 .github

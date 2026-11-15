@@ -38,8 +38,23 @@ player. Al connettore fa solo il protocollo.
 
 | | Dove | Cosa trovi |
 |---|------|-----------|
-| **Il connettore** | `simple/` | il file unico, pronto all'uso. **Leggi [`simple/README.md`](simple/README.md)** |
-| **Il pannello** | *in arrivo* | multi-linea: più utenti e playlist da un pannello |
+| **Il connettore** | `simple/server.js` | il file unico che parla col player. **Leggi [`simple/README.md`](simple/README.md)** |
+| **Il pannello** | `panel/` | l'app Flutter (web, desktop, mobile) |
+| **Il deploy** | `docker-compose.yml` | i due container + GitHub Actions |
+
+### Il pannello Flutter
+
+```bash
+npm run panel:build      # build locale (richiede Flutter)
+npm run panel:up         # pannello in Docker
+```
+
+Il pannello è un'app Flutter: da un solo progetto escono **web, macOS, Windows,
+Linux, iOS e Android**. Per il web viene servita da nginx dentro il container
+`jarvis_panel`; per le altre piattaforme si compila con `flutter build <target>`.
+
+La build Docker usa l'immagine `ghcr.io/cirruslabs/flutter:stable`: sul server
+si scarica **una volta sola** e resta nella cache di Docker.
 
 ## Dove va
 
