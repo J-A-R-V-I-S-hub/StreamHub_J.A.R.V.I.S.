@@ -45,7 +45,13 @@ services:
       start_period: 5s
     networks:
       - default
+      # Rete di Nginx Proxy Manager: cosi' NPM raggiunge il container per
+      # nome senza dover eseguire 'docker network connect' a mano (e il
+      # collegamento non si perde se NPM viene ricreato).
+      - npm_default
 
 networks:
   default:
     name: streamhub_jarvis_default
+  npm_default:
+    external: true
