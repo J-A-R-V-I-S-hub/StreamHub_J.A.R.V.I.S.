@@ -66,9 +66,9 @@ services:
     profiles: ['panel']
     environment:
       TZ: ${TZ:-Europe/Rome}
-      # Il pannello sa dove si trova l'API: glielo passiamo come variabile
-      # d'ambiente, cosi' non deve indovinarlo.
-      API_URL: ${PANEL_API_URL:-http://streamhub_jarvis:8080}
+      # Nota: il pannello e' un build statico, quindi NON legge variabili
+      # d'ambiente a runtime. Sa dove sta l'API perche' la chiama sulla
+      # stessa origine (Uri.base.origin): pannello su /, API sui suoi path.
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/ >/dev/null || exit 1"]
