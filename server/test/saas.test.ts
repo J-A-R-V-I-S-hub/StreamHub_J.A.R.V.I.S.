@@ -11,7 +11,7 @@ import type { Config } from "../src/config.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const config = {
-  nodeEnv: "test", port: 0, host: "127.0.0.1", publicUrl: "http://test.local",
+  nodeEnv: "test", port: 0, host: "127.0.0.1", serverUrl: "http://test.local",
   databasePath: ":memory:", sessionTtlDays: 30, adminEmail: "admin@local.it",
   adminPassword: "", logLevel: "silent", tmdbApiKey: "", tmdbLanguage: "it-IT",
   tmdbCachePath: "", dataDir: "",

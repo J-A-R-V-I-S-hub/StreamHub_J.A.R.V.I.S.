@@ -15,7 +15,7 @@ const config: Config = {
   nodeEnv: "test",
   port: 0,
   host: "127.0.0.1",
-  publicUrl: "http://test.local",
+  serverUrl: "http://test.local",
   databasePath: ":memory:",
   sessionTtlDays: 30,
   adminEmail: "admin@local.it",

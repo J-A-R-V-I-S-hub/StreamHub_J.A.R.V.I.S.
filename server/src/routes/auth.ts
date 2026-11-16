@@ -19,7 +19,7 @@ type UserRow = {
 };
 
 export function registerAuthRoutes(app: FastifyInstance, db: Db, config: Config): void {
-  const secure = config.publicUrl.startsWith("https://");
+  const secure = config.serverUrl.startsWith("https://");
 
   function cookieFor(token: string, maxAge: number): string {
     const parts = [

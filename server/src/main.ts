@@ -67,5 +67,5 @@ app.listen({ port: config.port, host: config.host }, (err, address) => {
     console.error(err);
     process.exit(1);
   }
-  console.log(`[server] in ascolto su ${address} — pubblico: ${config.publicUrl}`);
+  console.log(`[server] in ascolto su ${address} — pubblico: ${config.serverUrl}`);
 });

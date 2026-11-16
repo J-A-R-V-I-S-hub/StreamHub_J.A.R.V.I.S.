@@ -183,7 +183,7 @@ export function registerLineRoutes(app: FastifyInstance, db: Db, config: Config)
 
     return {
       playlist_name: line.name,
-      playlist_url: config.publicUrl,
+      playlist_url: config.serverUrl,
       username: line.xtream_username,
       password: line.xtream_password,
     };
