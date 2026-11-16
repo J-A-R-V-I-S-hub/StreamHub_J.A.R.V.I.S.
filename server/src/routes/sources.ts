@@ -7,6 +7,7 @@ import { userFromRequest } from "../lib/http.ts";
 import { parseM3u } from "../ingest/m3u.ts";
 import { syncEntries } from "../ingest/sync.ts";
 import { fetchXtreamEntries } from "../ingest/xtream.ts";
+import { fetchArchiveEntries, ARCHIVE_COLLECTIONS, ARCHIVE_MIN_HEIGHT } from "../ingest/archive.ts";
 import { enrichLine, type TmdbClient } from "../enrich/tmdb.ts";
 
 type SourceRow = {
@@ -20,6 +21,9 @@ type SourceRow = {
   sync_error: string | null;
   created_at: string;
 };
+
+/** Collezioni disponibili per l'import pubblico (per il pannello). */
+export { ARCHIVE_COLLECTIONS };
 
 export function registerSourceRoutes(
   app: FastifyInstance,
@@ -82,8 +86,16 @@ export function registerSourceRoutes(
     const body = (req.body ?? {}) as { type?: string; url?: string; username?: string; password?: string };
     const type = (body.type ?? "m3u").trim();
     const url = (body.url ?? "").trim();
-    if (!["m3u", "xtream", "local"].includes(type)) {
-      return fail(reply, 400, "bad_request", "type deve essere m3u, xtream o local");
+    if (!["m3u", "xtream", "local", "archive"].includes(type)) {
+      return fail(reply, 400, "bad_request", "type deve essere m3u, xtream, local o archive");
+    }
+    if (type === "archive" && !ARCHIVE_COLLECTIONS[url]) {
+      return fail(
+        reply,
+        400,
+        "bad_request",
+        `collezione sconosciuta. Disponibili: ${Object.keys(ARCHIVE_COLLECTIONS).join(", ")}`
+      );
     }
     if (!url) return fail(reply, 400, "bad_request", "url obbligatorio");
 
@@ -133,7 +145,16 @@ export function registerSourceRoutes(
 
     try {
       let entries;
-      if (source.type === "xtream") {
+      if (source.type === "archive") {
+        // Catalogo di pubblico dominio, importato in blocco nel database.
+        const limit = Number(process.env.ARCHIVE_LIMIT ?? 60);
+        entries = await fetchArchiveEntries({
+          collection: source.url,
+          limit,
+          group: ARCHIVE_COLLECTIONS[source.url] ?? "Classici",
+          minHeight: ARCHIVE_MIN_HEIGHT[source.url] ?? Number(process.env.ARCHIVE_MIN_HEIGHT ?? 0),
+        });
+      } else if (source.type === "xtream") {
         if (!source.username || !source.password) {
           throw new Error("sorgente xtream senza username/password");
         }

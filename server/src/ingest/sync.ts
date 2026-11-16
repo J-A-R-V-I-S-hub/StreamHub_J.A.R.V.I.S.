@@ -50,8 +50,18 @@ export function syncEntries(db: Db, lineId: string, entries: M3uEntry[]): SyncRe
       if (e.kind === "movie") {
         const cat = categoryId("vod", e.group);
         db.prepare(
-          "INSERT INTO movies (id, line_id, category_id, name, url, icon, stream_id) VALUES (?, ?, ?, ?, ?, ?, ?)"
-        ).run(randomUUID(), lineId, cat, e.name, e.url, e.logo || null, vodSeq++);
+          "INSERT INTO movies (id, line_id, category_id, name, url, icon, plot, year, stream_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        ).run(
+          randomUUID(),
+          lineId,
+          cat,
+          e.name,
+          e.url,
+          e.logo || null,
+          e.plot || null,
+          e.year ?? null,
+          vodSeq++
+        );
         movies++;
       } else {
         const cat = categoryId("live", e.group);

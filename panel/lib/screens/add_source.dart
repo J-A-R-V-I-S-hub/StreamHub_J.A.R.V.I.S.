@@ -15,6 +15,8 @@ class _AddSourceScreenState extends State<AddSourceScreen> {
   final _url = TextEditingController();
   final _user = TextEditingController();
   final _pass = TextEditingController();
+  bool _pubblico = false;
+  String _collezione = 'feature_films';
   bool _busy = false;
   String? _message;
   bool _isError = false;
@@ -29,7 +31,7 @@ class _AddSourceScreenState extends State<AddSourceScreen> {
 
   Future<void> _save() async {
     final url = _url.text.trim();
-    if (url.isEmpty) {
+    if (!_pubblico && url.isEmpty) {
       setState(() {
         _message = 'Incolla il link della playlist.';
         _isError = true;
@@ -44,9 +46,10 @@ class _AddSourceScreenState extends State<AddSourceScreen> {
     try {
       await widget.api.addSource(
         widget.line.id,
-        url: url,
-        username: _user.text.trim(),
-        password: _pass.text,
+        url: _pubblico ? _collezione : url,
+        type: _pubblico ? 'archive' : 'm3u',
+        username: _pubblico ? null : _user.text.trim(),
+        password: _pubblico ? null : _pass.text,
       );
       final sources = await widget.api.sources(widget.line.id);
       if (sources.isEmpty) throw ApiException('sorgente non salvata');
@@ -80,30 +83,61 @@ class _AddSourceScreenState extends State<AddSourceScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text('Incolla qui il link della tua playlist',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
-          const Text(
-            'Se il tuo fornitore ti ha dato anche utente e password, mettili qui sotto.',
-            style: TextStyle(fontSize: 12, color: Color(0xFFC9A3A3)),
+          SegmentedButton<bool>(
+            segments: const [
+              ButtonSegment(value: false, label: Text('Il mio link'), icon: Icon(Icons.link)),
+              ButtonSegment(value: true, label: Text('Catalogo pubblico'), icon: Icon(Icons.movie_filter)),
+            ],
+            selected: {_pubblico},
+            onSelectionChanged: (v) => setState(() => _pubblico = v.first),
           ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _url,
-            keyboardType: TextInputType.url,
-            decoration: const InputDecoration(labelText: 'Link della playlist'),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _user,
-            decoration: const InputDecoration(labelText: 'Utente (se serve)'),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _pass,
-            obscureText: true,
-            decoration: const InputDecoration(labelText: 'Password (se serve)'),
-          ),
+          const SizedBox(height: 20),
+          if (!_pubblico) ...[
+            const Text('Incolla qui il link della tua playlist',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            const Text(
+              'Se il fornitore ti ha dato anche utente e password, mettili qui sotto.',
+              style: TextStyle(fontSize: 12, color: Color(0xFFC9A3A3)),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _url,
+              keyboardType: TextInputType.url,
+              decoration: const InputDecoration(labelText: 'Link della playlist'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _user,
+              decoration: const InputDecoration(labelText: 'Utente (se serve)'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _pass,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'Password (se serve)'),
+            ),
+          ] else ...[
+            const Text('Film di pubblico dominio, gia\' pronti',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            const Text(
+              'Nessun link da incollare: li scarichiamo noi e restano nel tuo catalogo.',
+              style: TextStyle(fontSize: 12, color: Color(0xFFC9A3A3)),
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              initialValue: _collezione,
+              decoration: const InputDecoration(labelText: 'Collezione'),
+              items: const [
+                DropdownMenuItem(value: 'feature_films', child: Text('Film classici')),
+                DropdownMenuItem(value: 'silent_films', child: Text('Film muti')),
+                DropdownMenuItem(value: 'more_animation', child: Text('Animazione')),
+                DropdownMenuItem(value: 'classic_tv', child: Text('Telefilm classici')),
+              ],
+              onChanged: (v) => setState(() => _collezione = v ?? _collezione),
+            ),
+          ],
           const SizedBox(height: 20),
           FilledButton(
             onPressed: _busy ? null : _save,

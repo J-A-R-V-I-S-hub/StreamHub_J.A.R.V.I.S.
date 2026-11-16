@@ -170,12 +170,18 @@ class ApiClient {
     );
   }
 
-  Future<void> addSource(String lineId, {required String url, String? username, String? password}) async {
+  Future<void> addSource(
+    String lineId, {
+    required String url,
+    String type = 'm3u',
+    String? username,
+    String? password,
+  }) async {
     final res = await _http
         .post(_uri('/api/lines/$lineId/sources'),
             headers: _headers,
             body: jsonEncode({
-              'type': 'm3u',
+              'type': type,
               'url': url,
               if (username != null && username.isNotEmpty) 'username': username,
               if (password != null && password.isNotEmpty) 'password': password,

@@ -7,6 +7,9 @@ export type M3uEntry = {
   logo: string;
   tvgId: string;
   kind: "live" | "movie";
+  /** Opzionali: gli import che conoscono i metadati li passano. */
+  year?: number | null;
+  plot?: string;
 };
 
 const ATTR = /([a-zA-Z0-9-_]+)="([^"]*)"/g;
