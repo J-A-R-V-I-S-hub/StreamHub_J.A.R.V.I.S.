@@ -23,7 +23,7 @@ services:
     networks:
       - default
     environment:
-      PUBLIC_URL: ${LOCAL_URL:-http://127.0.0.1:8090}
+      SERVER_URL: ${LOCAL_URL:-http://127.0.0.1:8090}
       DATABASE_PATH: /app/data/streamhub.db
     ports:
       - '8090:8080'

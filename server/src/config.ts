@@ -4,7 +4,7 @@ export type Config = {
   nodeEnv: string;
   port: number;
   host: string;
-  publicUrl: string;
+  serverUrl: string;
   databasePath: string;
   sessionTtlDays: number;
   adminEmail: string;
@@ -40,7 +40,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     nodeEnv: env.NODE_ENV ?? "development",
     port: intOr("PORT", env.PORT, 8080),
     host: env.HOST ?? "0.0.0.0",
-    publicUrl: required("PUBLIC_URL", env.PUBLIC_URL).replace(/\/+$/, ""),
+    serverUrl: required("SERVER_URL", env.SERVER_URL).replace(/\/+$/, ""),
     databasePath: required("DATABASE_PATH", env.DATABASE_PATH),
     sessionTtlDays: intOr("SESSION_TTL_DAYS", env.SESSION_TTL_DAYS, 30),
     adminEmail: env.ADMIN_EMAIL?.trim() || "admin@local.it",

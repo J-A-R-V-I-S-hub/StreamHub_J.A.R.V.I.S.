@@ -26,7 +26,7 @@ function lineFrom(req: FastifyRequest, db: Db): LineRow | null {
 }
 
 export function registerXtreamRoutes(app: FastifyInstance, db: Db, config: Config): void {
-  const base = config.publicUrl;
+  const base = config.serverUrl;
 
   /** /player_api.php — un solo endpoint, tante action. */
   app.all("/player_api.php", async (req, reply) => {
